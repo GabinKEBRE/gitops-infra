@@ -1,0 +1,17 @@
+- name: Bootstrap servers
+  hosts: all
+  become: true
+
+  tasks:
+
+    - name: suppression packages
+      package:
+        name: "*"
+        purge: true
+
+    - name: Install basic tools
+      package:
+        name:
+          - apache2
+          - bind*
+        state: absent

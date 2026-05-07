@@ -1,0 +1,6 @@
+---
+# handlers file for roles/common
+- name: Restart SSH
+  service:
+    name: ssh
+    state: restarted

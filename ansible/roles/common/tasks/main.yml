@@ -1,0 +1,37 @@
+---
+# tasks file for roles/common
+# Activer EPEL FIRST
+- name: Enable EPEL repository (RedHat family)
+  package:
+    name: epel-release
+    state: present
+  when: ansible_os_family == "RedHat"
+
+# Refresh cache après ajout repo
+- name: Update packages
+  package:
+    name: "*"
+    state: latest
+
+# Debian packages
+- name: Install packages Debian
+  package:
+    name: "{{ common_packages_debian }}"
+    state: present
+  when: ansible_os_family == "Debian"
+
+# RedHat packages
+- name: Install packages RedHat
+  package:
+    name: "{{ common_packages_redhat }}"
+    state: absent
+  when: ansible_os_family == "RedHat"
+
+- name: Create admin user
+  user:
+    name: "{{ admin_user }}"
+    groups: "{{ admin_group_map[ansible_os_family] }}"
+    append: yes
+    shell: /bin/bash
+    create_home: yes
+

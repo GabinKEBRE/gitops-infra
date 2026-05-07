@@ -1,0 +1,19 @@
+---
+# defaults file for roles/common
+common_packages_debian:
+  - curl
+  - vim
+  - git
+  - htop
+
+common_packages_redhat:
+  - httpd
+  #- curl
+  #- vim
+  #- git
+  #- htop
+admin_user: devops
+
+admin_group_map:
+  Debian: sudo
+  RedHat: wheel

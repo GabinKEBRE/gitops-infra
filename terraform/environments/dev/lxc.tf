@@ -1,0 +1,41 @@
+module "dev_lxc01" {
+  source = "../../modules/lxc"
+
+  node      = "pve"
+  vmid      = 215
+  name      = "dev-lxc01"
+
+  ssh_public_key = file("/root/.ssh/id_ed25519.pub")
+  root_password  = "LabPassword123"
+
+  ip        = "192.168.1.50/24"
+  gateway   = "192.168.1.1"
+
+  cores     = 2
+  memory    = 2048
+  disk_size = 10
+
+  storage   = "local-zfs"
+  template  = "templates-Container:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
+}
+
+module "dev_lxc02" {
+  source = "../../modules/lxc"
+
+  node      = "pve"
+  vmid      = 216
+  name      = "dev-lxc02"
+
+  ssh_public_key = file("/root/.ssh/id_ed25519.pub")
+  root_password  = "LabPassword123"
+
+  ip        = "192.168.1.210/24"
+  gateway   = "192.168.1.1"
+
+  cores     = 2
+  memory    = 4096
+  disk_size = 30
+
+  storage   = "local-zfs"
+  template  = "templates-Container:vztmpl/debian-12-turnkey-gitlab_18.1-1_amd64.tar.gz"
+}
