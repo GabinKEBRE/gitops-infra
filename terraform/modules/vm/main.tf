@@ -24,19 +24,24 @@ resource "proxmox_virtual_environment_vm" "vm" {
   }
 
   network_device {
-    bridge = var.bridge
-    model  = "virtio"
+    bridge  = var.bridge
+    vlan_id = var.vlan_tag # Injection du VLAN
+    model   = "virtio"
   }
 
-  initialization {
-
+initialization {
     datastore_id = var.datastore
 
     ip_config {
       ipv4 {
-        address = var.ip
-        gateway = var.gateway
+        address = var.ip == "dhcp" ? "dhcp" : var.ip
+        gateway = var.ip == "dhcp" ? null : var.gateway
       }
+    }
+
+    # Correction ici : "servers" au pluriel et format liste []
+    dns {
+      servers = var.ip == "dhcp" ? null : [var.gateway]
     }
 
     user_account {
@@ -51,9 +56,9 @@ resource "proxmox_virtual_environment_vm" "vm" {
   }
 
   on_boot = true
- 
+
   startup {
     order    = 1
     up_delay = 60
- }
+  }
 }

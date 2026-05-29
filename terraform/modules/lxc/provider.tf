@@ -7,7 +7,7 @@ terraform {
   }
 }
 provider "proxmox" {
-  endpoint = "https://192.168.1.47:8006/api2/json"
+  endpoint = "https://10.20.30.200:8006/api2/json"
 
   api_token = "automation@pve!terraform=360ff66a-5ef1-4cee-90a1-671591663a57"
 

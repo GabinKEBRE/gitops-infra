@@ -5,15 +5,21 @@ common_packages_debian:
   - vim
   - git
   - htop
+  - zabbix-agent2  # + le package de l'agent zabbix
 
 common_packages_redhat:
   - httpd
-  #- curl
-  #- vim
-  #- git
-  #- htop
+#  - curl
+  - vim
+  - git
+  - htop
+  - zabbix-agent2  # + le package de l'agent zabbix
+
 admin_user: devops
 
 admin_group_map:
   Debian: sudo
   RedHat: wheel
+
+# Configuration Zabbix Agent 2
+zabbix_server_ip: "10.20.30.150"  # Mets l'IP de ton serveur Zabbix ici

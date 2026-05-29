@@ -1,50 +1,59 @@
-module "web01" {
-  source = "../../modules/vm"
+resource "proxmox_virtual_environment_vm" "vm" {
 
-  name        = "dev-web-01"
-  vm_id       = 210
-  template_id = 103
+  name      = var.name
+  node_name = "pve"
+  vm_id     = var.vm_id
 
-  cores  = 2
-  memory = 2048
+  clone {
+    vm_id = var.template_id
+  }
 
-  bridge    = "vmbr0"
-  datastore = "vm-storage"
+  cpu {
+    cores = var.cores
+    type  = "host"
+  }
 
-  ip      = "192.168.1.101/24"
-  gateway = "192.168.1.1"
-}
+  memory {
+    dedicated = var.memory
+  }
 
-module "db01" {
-  source = "../../modules/vm"
+  disk {
+    datastore_id = var.datastore
+    interface    = "scsi0"
+    size         = 20
+  }
 
-  name        = "dev-db-01"
-  vm_id       = 211
-  template_id = 202
+  network_device {
+    bridge = var.bridge
+    model  = "virtio"
+  }
 
-  cores  = 2
-  memory = 4096
+  initialization {
 
-  bridge    = "vmbr0"
-  datastore = "vm-storage"
+    datastore_id = var.datastore
 
-  ip      = "192.168.1.102/24"
-  gateway = "192.168.1.1"
-}
+    ip_config {
+      ipv4 {
+        address = var.ip
+        gateway = var.gateway
+      }
+    }
 
-module "calcul01" {
-  source = "../../modules/vm"
+    user_account {
+      username = "ubuntu"
+      password = "LabPassword123"
+      keys     = [file("/root/.ssh/id_ed25519.pub")]
+    }
+  }
 
-  name        = "dev-calcul-01"
-  vm_id       = 212
-  template_id = 201
+  agent {
+    enabled = true
+  }
 
-  cores  = 2
-  memory = 8192
-
-  bridge    = "vmbr0"
-  datastore = "vm-storage"
-
-  ip      = "192.168.1.103/24"
-  gateway = "192.168.1.1"
+  on_boot = true
+ 
+  startup {
+    order    = 1
+    up_delay = 60
+ }
 }

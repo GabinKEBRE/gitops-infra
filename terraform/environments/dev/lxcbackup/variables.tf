@@ -8,13 +8,6 @@ variable "memory" {}
 variable "disk_size" {}
 variable "storage" {}
 variable "template" {}
-
-variable "vlan_tag" {
-  description = "Tag VLAN pour isoler le conteneur LXC"
-  type        = number
-  default     = null
-}
-
 variable "ssh_public_key" {
   description = "La clé publique SSH pour l'accès root"
   type        = string
@@ -23,5 +16,5 @@ variable "ssh_public_key" {
 variable "root_password" {
   description = "Le mot de passe de l'utilisateur root"
   type        = string
-  sensitive   = true 
+  sensitive   = true # Masque le mot de passe dans les logs
 }

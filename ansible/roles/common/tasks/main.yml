@@ -1,37 +1,75 @@
 ---
-# tasks file for roles/common
-# Activer EPEL FIRST
-- name: Enable EPEL repository (RedHat family)
-  package:
-    name: epel-release
+# 1. AJOUT DES DÉPÔTS OFFICIELS (Avec clés GPG intégrées)
+
+- name: Télécharger le paquet de release Zabbix pour Debian 12
+  ansible.builtin.get_url:
+    url: "https://repo.zabbix.com/zabbix/7.0/debian/pool/main/z/zabbix-release/zabbix-release_latest+debian12_all.deb"
+    dest: "/tmp/zabbix-release_latest+debian12_all.deb"
+    mode: '0644'
+  when: ansible_os_family == "Debian"
+
+- name: Installer le paquet de release Zabbix (Configure le dépôt et la clé GPG)
+  ansible.builtin.apt:
+    deb: "/tmp/zabbix-release_latest+debian12_all.deb"
     state: present
+  when: ansible_os_family == "Debian"
+
+- name: Mettre à jour le cache apt après l'ajout du dépôt Zabbix
+  ansible.builtin.apt:
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Installer le dépôt Zabbix sur RedHat/Rocky
+  ansible.builtin.dnf:
+    name: "https://repo.zabbix.com/zabbix/7.0/rhel/9/x86_64/zabbix-release-latest.el9.noarch.rpm"
+    state: present
+    disable_gpg_check: true
   when: ansible_os_family == "RedHat"
 
-# Refresh cache après ajout repo
-- name: Update packages
-  package:
+
+# 2. MISES À JOUR SYSTÈME GLOBALES
+
+- name: Mettre à jour tous les paquets (Debian)
+  ansible.builtin.apt:
+    upgrade: dist
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Mettre à jour tous les paquets (RedHat)
+  ansible.builtin.dnf:
     name: "*"
     state: latest
+  when: ansible_os_family == "RedHat"
 
-# Debian packages
-- name: Install packages Debian
-  package:
+
+# 3. INSTALLATION DES PAQUETS COMMUNS (Y COMPRIS ZABBIX-AGENT2)
+
+- name: Installer les paquets communs sous Debian
+  ansible.builtin.apt:
     name: "{{ common_packages_debian }}"
     state: present
   when: ansible_os_family == "Debian"
 
-# RedHat packages
-- name: Install packages RedHat
-  package:
+- name: Installer les paquets communs sous RedHat
+  ansible.builtin.dnf:
     name: "{{ common_packages_redhat }}"
-    state: absent
+    state: present
   when: ansible_os_family == "RedHat"
 
-- name: Create admin user
-  user:
-    name: "{{ admin_user }}"
-    groups: "{{ admin_group_map[ansible_os_family] }}"
-    append: yes
-    shell: /bin/bash
-    create_home: yes
 
+# 4. CONFIGURATION DE L'AGENT ZABBIX 2
+
+- name: Déployer la configuration de Zabbix Agent 2
+  ansible.builtin.template:
+    src: zabbix_agent2.conf.j2
+    dest: /etc/zabbix/zabbix_agent2.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Zabbix Agent
+
+- name: S'assurer que le service Zabbix Agent 2 est démarré et activé
+  ansible.builtin.systemd:
+    name: zabbix-agent2
+    state: started
+    enabled: yes

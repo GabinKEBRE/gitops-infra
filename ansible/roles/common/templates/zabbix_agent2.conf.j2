@@ -1,0 +1,15 @@
+PidFile=/var/run/zabbix/zabbix_agent2.pid
+LogFile=/var/log/zabbix/zabbix_agent2.log
+LogFileSize=0
+
+Server={{ zabbix_server_ip }}
+ServerActive={{ zabbix_server_ip }}
+
+# Utilisation du hostname système de la machine pour l'interface Zabbix
+Hostname={{ ansible_hostname }}
+
+# Ligne cruciale pour l'auto-registration
+HostMetadataItem=system.uname
+
+Include=/etc/zabbix/zabbix_agent2.d/*.conf
+ControlSocket=/tmp/agent.sock

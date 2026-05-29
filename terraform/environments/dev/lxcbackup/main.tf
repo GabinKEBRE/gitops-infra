@@ -11,18 +11,12 @@ resource "proxmox_virtual_environment_container" "lxc" {
     user_account {
       keys     = [var.ssh_public_key]
       password = var.root_password
-    }
-
+          }
     ip_config {
       ipv4 {
-        address = var.ip == "dhcp" ? "dhcp" : var.ip
-        gateway = var.ip == "dhcp" ? null : var.gateway
+        address = var.ip
+        gateway = var.gateway
       }
-    }
-
-    
-    dns {
-      servers = var.ip == "dhcp" ? null : [var.gateway]
     }
   }
 
@@ -40,13 +34,12 @@ resource "proxmox_virtual_environment_container" "lxc" {
   }
 
   network_interface {
-    name    = "eth0"
-    bridge  = "vmbr0"
-    vlan_id = var.vlan_tag # Application dynamique du VLAN
+    name = "eth0"
+    bridge = "vmbr0"
   }
 
   operating_system {
     template_file_id = var.template
-    type              = "ubuntu"
+    type             = "ubuntu"
   }
 }

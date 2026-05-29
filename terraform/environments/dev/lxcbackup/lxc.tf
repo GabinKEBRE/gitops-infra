@@ -8,9 +8,8 @@ module "dev_lxc01" {
   ssh_public_key = file("/root/.ssh/id_ed25519.pub")
   root_password  = "LabPassword123"
 
-  vlan_tag  = 20
-  ip        = "10.20.20.215/24"
-  gateway   = "10.20.20.1"
+  ip        = "192.168.1.50/24"
+  gateway   = "192.168.1.1"
 
   cores     = 2
   memory    = 2048
@@ -30,9 +29,8 @@ module "dev_lxc02" {
   ssh_public_key = file("/root/.ssh/id_ed25519.pub")
   root_password  = "LabPassword123"
 
-  vlan_tag  = 20
-  ip        = "10.20.20.210/24"
-  gateway   = "10.20.20.1"
+  ip        = "192.168.1.210/24"
+  gateway   = "192.168.1.1"
 
   cores     = 2
   memory    = 4096
