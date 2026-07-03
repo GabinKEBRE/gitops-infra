@@ -1,65 +1,552 @@
-# Pipeline GitOps d'Automatisation - Terraform & Ansible
+# Infrastructure Terraform - BESTTIC
 
-Ce dépôt centralise l'approche Infrastructure as Code (IaC) et la gestion de configuration de notre infrastructure. Il permet d'industrialiser, de sécuriser et de rendre reproductible le cycle de vie complet de nos ressources : du provisionnement brut des machines virtuelles (VMs) jusqu'au déploiement et à la mise en conformité des applicatifs conteneurisés.
+## Présentation
 
-## 🏗️ Philosophie et Workflow GitOps
-[ Code (Git) ] ──► [ Terraform ] ──► Provisionnement des VMs & Réseaux
+Ce dépôt permet le déploiement automatisé de l'infrastructure virtuelle de l'entreprise BESTTIC sur une plateforme Proxmox VE grâce à Terraform.
+
+L'objectif est de garantir :
+
+- un déploiement reproductible
+- une infrastructure versionnée
+- une gestion centralisée
+- une standardisation des serveurs
+- une évolution simplifiée de l'infrastructure
+
+---
+
+# Architecture
+
+```
+terraform/
+
 │
-▼ (Génération de l'inventaire)
-[ Code (Git) ] ──► [  Ansible  ] ──► Durcissement OS, Docker & Conteneurs
 
-L'architecture de ce dépôt repose sur une séparation stricte des responsabilités entre le provisionnement de l'infrastructure et sa configuration :
-1. **Terraform (Orchestrateur d'Infrastructure) :** Communique avec les APIs des hyperviseurs ou fournisseurs cloud pour concevoir la topologie réseau, les clés SSH, et provisionner les instances de VMs.
-2. **Ansible (Gestionnaire de Configuration) :** Prend le relais une fois les machines accessibles en SSH pour appliquer les politiques de sécurité, installer les runtimes (Docker) et orchestrer les conteneurs applicatifs.
+├── modules/
+
+│   ├── vm/
+
+│   └── lxc/
+
+│
+
+├── environments/
+
+│   ├── dev/
+
+│   ├── recette/
+
+│   └── production/
+
+│
+
+├── templates/
+
+│
+
+├── variables/
+
+│
+
+└── README.md
+
+```
+
+Le projet repose sur :
+
+- Modules réutilisables
+- Environnements indépendants
+- Cloud-Init
+- Provider Proxmox
 
 ---
 
-## 🎯 Cas d'Usage Principaux
+# Architecture des environnements
 
-### Cas 1 : Déploiement à chaud d'un nœud d'infrastructure d'entreprise
-* **Besoin :** Instancier une nouvelle VM dédiée à un service d'équipe, configurer son pare-feu réseau, installer Docker, et déployer une pile de services isolés.
-* **Résolution :** Exécution du bloc Terraform cible, injection automatique de l'IP dans l'inventaire dynamique Ansible, puis exécution du playbook de configuration de base de l'entreprise.
+Le dépôt est organisé en plusieurs environnements.
 
-### Cas 2 : Audit de conformité et remédiation du "Configuration Drift"
-* **Besoin :** S'assurer qu'aucune modification manuelle n'a altéré la configuration des conteneurs ou les règles de sécurité des OS sur le parc.
-* **Résolution :** Lancement périodique d'Ansible en mode de vérification (`--check`) pour détecter les écarts et réappliquer l'état de référence défini dans le dépôt Git.
+| Environnement | Description |
+|--------------|-------------|
+| dev | Développement |
+| recette | Validation |
+| production | Production |
+
+Chaque environnement possède son propre :
+
+- main.tf
+- variables
+- state Terraform
 
 ---
 
-## 💻 Commandes Réelles d'Exploitation
+# Modules Terraform
 
-### 1. Phase Terraform : Provisionnement des VMs
+Deux modules sont disponibles.
 
-Toutes les commandes doivent être exécutées depuis le répertoire `./terraform`.
+## Module VM
+
+Permet le déploiement des machines virtuelles.
+
+Fonctionnalités :
+
+- création automatique
+- Cloud-Init
+- configuration réseau
+- VLAN
+- disque
+- mémoire
+- CPU
+- GPU (si nécessaire)
+
+Emplacement :
+
+```
+modules/vm
+```
+
+---
+
+## Module LXC
+
+Permet le déploiement automatique des conteneurs Proxmox.
+
+Fonctionnalités :
+
+- création automatique
+- configuration réseau
+- VLAN
+- disque
+- mémoire
+- clé SSH
+- mot de passe
+
+Emplacement :
+
+```
+modules/lxc
+```
+
+---
+
+# Machines virtuelles déployées
+
+## Besttic-srv-zabbix
+
+Fonction :
+
+Serveur de supervision.
+
+Services hébergés :
+
+- Zabbix Server
+- Base de données
+- Agent
+
+Réseau :
+
+VLAN Administration
+
+Adresse IP
+
+```
+10.20.30.150
+```
+
+Configuration
+
+- 4 vCPU
+- 8 Go RAM
+- 40 Go disque
+
+---
+
+## Besttic-srv-vpn
+
+Fonction
+
+Serveur VPN.
+
+Services
+
+- WireGuard
+
+Adresse
+
+```
+10.20.10.151
+```
+
+Configuration
+
+- 2 vCPU
+- 2 Go RAM
+
+---
+
+## Besttic-srv-samba
+
+Fonction
+
+Serveur de fichiers.
+
+Services
+
+- Samba
+
+Adresse
+
+```
+10.20.20.152
+```
+
+Configuration
+
+- 4 vCPU
+- 8 Go RAM
+- 100 Go disque
+
+---
+
+## Besttic-srv-nextcloud
+
+Fonction
+
+Cloud privé.
+
+Services
+
+- Apache
+- PHP
+- MariaDB
+- Nextcloud
+
+Adresse
+
+```
+10.20.10.153
+```
+
+Configuration
+
+- Ubuntu 22.04
+- 4 vCPU
+- 8 Go RAM
+- 60 Go disque
+
+---
+
+## Besttic-srv-voip
+
+Fonction
+
+Téléphonie IP.
+
+Adresse
+
+```
+10.20.10.154
+```
+
+Configuration
+
+- Debian
+- 4 vCPU
+- 8 Go RAM
+
+---
+
+## Besttic-srv-calcul
+
+Fonction
+
+Serveur HPC / IA.
+
+Adresse
+
+```
+10.20.20.155
+```
+
+Configuration
+
+- Rocky Linux
+- 16 vCPU
+- RTX4000
+- 16 Go RAM
+- 150 Go disque
+
+---
+
+# Conteneurs LXC
+
+## Besttic-lxc01-doc
+
+Fonction
+
+Serveur documentaire.
+
+Adresse
+
+```
+10.20.20.215
+```
+
+Configuration
+
+- Ubuntu 24.04
+- 2 vCPU
+- 2 Go RAM
+
+---
+
+## Besttic-lxc02-gitlab
+
+Fonction
+
+Gestion des dépôts Git.
+
+Adresse
+
+```
+10.20.20.210
+```
+
+Configuration
+
+- Debian Turnkey GitLab
+- 2 vCPU
+- 4 Go RAM
+
+---
+
+# Plan d'adressage
+
+| Equipement | Adresse |
+|------------|----------|
+| Zabbix | 10.20.30.150 |
+| VPN | 10.20.10.151 |
+| Samba | 10.20.20.152 |
+| Nextcloud | 10.20.10.153 |
+| VoIP | 10.20.10.154 |
+| Calcul | 10.20.20.155 |
+| Documentation | 10.20.20.215 |
+| GitLab | 10.20.20.210 |
+
+---
+
+# Déploiement
+
+Initialisation
 
 ```bash
-# Initialiser le répertoire (téléchargement des providers et initialisation du backend)
 terraform init
+```
 
-# Valider la syntaxe et la cohérence des fichiers de configuration
+Validation
+
+```bash
 terraform validate
+```
 
-# Générer et examiner le plan d'exécution (simulation des ressources créées/modifiées)
-terraform plan -out=tfplan.binary
+Visualisation
 
-# Appliquer le plan pour provisionner réellement les VMs sur l'infrastructure
-terraform apply "tfplan.binary"
+```bash
+terraform plan
+```
 
-# (Optionnel) Détruire l'intégralité des ressources provisionnées par ce bloc
-# terraform destroy -auto-approve
-2. Phase Ansible : Configuration et Déploiement de Conteneurs
-Toutes les commandes doivent être exécutées depuis le répertoire ./ansible.
-# Télécharger les rôles et collections indispensables (ex: community.docker)
-ansible-galaxy collection install -r requirements.yml
+Déploiement
 
-# Tester la connectivité SSH initiale avec toutes les machines de l'inventaire
-ansible all -i inventory.ini -m ping
+```bash
+terraform apply
+```
 
-# Exécuter le playbook principal pour configurer l'OS, installer Docker et lancer les conteneurs
-ansible-playbook -i inventory.ini site.yml
+Suppression
 
-# Exécuter uniquement les tâches liées au déploiement des conteneurs Docker (via les Tags)
-ansible-playbook -i inventory.ini site.yml --tags "docker,apps"
+```bash
+terraform destroy
+```
 
-# Lancer une vérification à blanc (dry-run) pour identifier les modifications sans les appliquer
-ansible-playbook -i inventory.ini site.yml --check
+---
+
+# Ajouter une nouvelle VM
+
+Créer un nouveau bloc dans :
+
+```
+terraform/environments/dev/main.tf
+```
+
+Exemple
+
+```hcl
+module "srv_web" {
+
+source="../../modules/vm"
+
+...
+
+}
+```
+
+Puis
+
+```bash
+terraform plan
+terraform apply
+```
+
+---
+
+# Ajouter un nouveau conteneur
+
+Créer un nouveau module dans
+
+```
+lxc.tf
+```
+
+Puis
+
+```bash
+terraform apply
+```
+
+---
+
+# Modifier une machine
+
+Modifier uniquement :
+
+- CPU
+- RAM
+- disque
+- VLAN
+- IP
+
+Puis
+
+```bash
+terraform apply
+```
+
+Terraform appliquera uniquement les différences.
+
+---
+
+# Gestion des templates
+
+Les templates doivent être présents dans Proxmox.
+
+Exemple
+
+```
+101 Ubuntu 22.04
+
+201 Debian 12
+
+202 Rocky Linux 9
+```
+
+Toute modification des templates impactera les futurs déploiements.
+
+---
+
+# Cloud-Init
+
+Chaque VM est configurée automatiquement :
+
+- utilisateur
+- mot de passe
+- adresse IP
+- passerelle
+- DNS
+- SSH
+
+Aucune intervention manuelle n'est nécessaire après le déploiement.
+
+---
+
+# Exploitation
+
+Après chaque déploiement vérifier :
+
+□ VM créée
+
+□ Adresse IP correcte
+
+□ VLAN correct
+
+□ SSH accessible
+
+□ Cloud-Init terminé
+
+□ Services démarrés
+
+□ Sauvegarde Proxmox
+
+□ Supervision Zabbix
+
+---
+
+# Bonnes pratiques
+
+Ne jamais modifier une VM directement depuis Proxmox.
+
+Toutes les modifications doivent être réalisées dans Terraform.
+
+Ne jamais modifier le fichier terraform.tfstate manuellement.
+
+Conserver les templates à jour.
+
+Versionner chaque évolution dans Git.
+
+Documenter chaque nouvelle VM.
+
+---
+
+# Dépannage
+
+## VM absente
+
+```
+terraform state list
+```
+
+---
+
+## Etat incohérent
+
+```
+terraform refresh
+```
+
+---
+
+## Vérifier le plan
+
+```
+terraform plan
+```
+
+---
+
+## Réimporter une VM
+
+```
+terraform import
+```
+
+---
+
+# Auteur
+
+Projet réalisé dans le cadre du stage de fin d'études
+
+Entreprise : BESTTIC
+
+Infrastructure automatisée :
+
+- Proxmox VE
+- Terraform
+- Cloud-Init
+- GitOps
+
